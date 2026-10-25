@@ -5,7 +5,7 @@
 ## 실행
 
 `index.html`을 브라우저에서 열면 됩니다. 설치나 빌드는 필요하지 않습니다.
-위치 기능을 사용할 때 브라우저가 로컬 파일 접근을 제한하면 다음 서버로 실행하세요.
+위치 기능을 사용할 때 브라우저가 로컬 파일 접근을 제한하면 프로젝트 최상단(`index.html`이 있는 폴더)에서 다음 서버로 실행하세요.
 
 ```sh
 python3 -m http.server 8000
@@ -35,7 +35,7 @@ python3 -m http.server 8000
 
 ## 이야기 편집
 
-`text.js`의 `stage1`부터 `stage4`까지 문장을 입력합니다. 단계마다 25칸이 준비되어 있으며,
+`content/text.js`의 `stage1`부터 `stage4`까지 문장을 입력합니다. 단계마다 25칸이 준비되어 있으며,
 빈 문자열은 제외됩니다. 항목을 추가하거나 삭제해도 됩니다.
 저장하고 새로고침하면 적용됩니다.
 
@@ -45,15 +45,15 @@ python3 -m http.server 8000
 
 ## 파일
 
-- `index.html`, `style.css`: 화면 구성
-- `flight.js`: 두 휠 조작, 관성, 카메라, 경계 이동
-- `world.js`: 네 단계, 이야기 트리거, 자동 대화창, 4px 눈 깜빡임 전환 (위아래 닫힘 → 위치 이동 → 다시 열림, 어두운 단계에서는 흰색)
-- `text.js`: 작성할 문장
-- `wind.js`: 현재 위치의 바람 조회
-- `dither.js`: 하루살이 픽셀 렌더링
-- `bitmap-text.js`, `fonts/`: Bitsy Unicode Asian 원본 비트맵 폰트 렌더링
+- `index.html`, `css/game.css`: 화면 구성
+- `js/game/flight.js`: 두 휠 조작, 관성, 카메라, 경계 이동
+- `js/game/world.js`: 네 단계, 이야기 트리거, 자동 대화창, 4px 눈 깜빡임 전환 (위아래 닫힘 → 위치 이동 → 다시 열림, 어두운 단계에서는 흰색)
+- `content/text.js`: 작성할 문장
+- `js/game/wind.js`: 현재 위치의 바람 조회
+- `js/game/dither.js`: 하루살이 픽셀 렌더링
+- `js/game/bitmap-text.js`, `assets/fonts/`: Bitsy Unicode Asian 원본 비트맵 폰트 렌더링
 
-폰트 원본과 출처는 `fonts/SOURCE.md`를 참고하세요.
+폰트 원본과 출처는 `assets/fonts/SOURCE.md`를 참고하세요.
 
 ## 오브젝트 생성기
 
@@ -66,18 +66,18 @@ python3 -m http.server 8000
 
 ### 미니게임 트리거 아이콘
 
-- `assets/minigame-trigger-16.png`: 투명 배경 16×16 원본.
-- `assets/minigame-trigger-64.png`, `assets/minigame-trigger.svg`: 한 칸 4px인 64×64 아이콘.
-- `assets/minigame-trigger.json`: 제너레이터에서 불러올 수 있는 2프레임 데이터. 프레임당 400ms, 별 주변 5픽셀 변화.
+- `assets/icons/minigame-trigger-16.png`: 투명 배경 16×16 원본.
+- `assets/icons/minigame-trigger-64.png`, `assets/icons/minigame-trigger.svg`: 한 칸 4px인 64×64 아이콘.
+- `assets/icons/minigame-trigger.json`: 제너레이터에서 불러올 수 있는 2프레임 데이터. 프레임당 400ms, 별 주변 5픽셀 변화.
 - `generate.html`의 모양 만들기 → 미니게임 반짝임에서도 생성할 수 있습니다. seed의 짝수/홀수에 따라 두 프레임이 전환됩니다.
 
 ### 미니게임 실행과 복귀
 
-- `mini_00` 접근 시 노란색·흰색 4px 디더링 wipe 뒤 `minigame_00.html`을 iframe으로 엽니다.
-- `minigame.js`가 별도 60초를 관리합니다. 로딩 완료 후 시작하며, 탭을 숨긴 동안에는 정지합니다.
+- `mini_00` 접근 시 노란색·흰색 4px 디더링 wipe 뒤 `minigames/minigame_00/minigame_00.html`을 iframe으로 엽니다.
+- `js/minigame-manager.js`가 별도 60초를 관리합니다. 로딩 완료 후 시작하며, 탭을 숨긴 동안에는 정지합니다.
 - 실행 중 메인 이동과 생명 타이머는 멈추고, 종료 wipe 후 원래 위치로 돌아오며 생명은 60초로 초기화합니다.
 - 아이콘에서 95px 이상 벗어나야 다시 실행됩니다.
-- `minigame_00.html`과 `minigame_00.js`: 더디다 단어 쌓기 게임. 왼쪽으로 90도 회전한 세로 단어가 위쪽 중앙에서 내려오며, 휠로 좌우 이동하여 쌓습니다. 단어 크기는 7.2×21.6px입니다. Matter.js의 관절로 이어진 단어가 위쪽 중앙에서 끊김 없이 밀려 나오며, 휠로 줄기를 좌우로 휘어 쌓습니다. 카메라는 고정되어 화면 안에 쌓이고, 중앙 안내는 게임 진행 5초 후 사라집니다. ←·↑는 왼쪽, ↓·→는 오른쪽으로 조작합니다. 부모가 60초와 정지·재개를 관리합니다.
+- `minigames/minigame_00/minigame_00.html`과 `minigames/minigame_00/minigame_00.js`: 더디다 단어 쌓기 게임. 왼쪽으로 90도 회전한 세로 단어가 위쪽 중앙에서 내려오며, 휠로 좌우 이동하여 쌓습니다. 단어 크기는 7.2×21.6px입니다. Matter.js의 관절로 이어진 단어가 위쪽 중앙에서 끊김 없이 밀려 나오며, 휠로 줄기를 좌우로 휘어 쌓습니다. 카메라는 고정되어 화면 안에 쌓이고, 중앙 안내는 게임 진행 5초 후 사라집니다. ←·↑는 왼쪽, ↓·→는 오른쪽으로 조작합니다. 부모가 60초와 정지·재개를 관리합니다.
 
 ### 시간 관리자
 
@@ -91,7 +91,7 @@ python3 -m http.server 8000
 
 게임 화면 왼쪽 아래에 Home과 바람 버튼이 나란히 있습니다. Home은 대화·미니게임·전환을 종료하고 위치, 속도, 생명, 트리거 상태를 초기화한 뒤 대기 화면으로 돌아갑니다. 저장한 시작 시간 설정과 바람 연결은 유지됩니다.
 
-Matter.js 0.20.0은 `vendor/`에 포함되어 오프라인으로 실행할 수 있습니다. 단어의 충돌 모서리는 둥글게 처리하며, 휠은 새로 나오는 줄기에 힘을 줍니다. MIT 라이선스 원문은 `vendor/MATTER-LICENSE.txt`에 있습니다. 공식 소스: https://github.com/liabru/matter-js/tree/0.20.0
+Matter.js 0.20.0은 `vendor/matter/`에 포함되어 오프라인으로 실행할 수 있습니다. 단어의 충돌 모서리는 둥글게 처리하며, 휠은 새로 나오는 줄기에 힘을 줍니다. MIT 라이선스 원문은 `vendor/matter/MATTER-LICENSE.txt`에 있습니다. 공식 소스: https://github.com/liabru/matter-js/tree/0.20.0
 
 
 ## Arduino USB 두 휠 연결
@@ -101,7 +101,7 @@ Uno R3 / ATmega328P Nano에 두 각도를 CSV로 보내는 스케치를 업로�
 예: `126.00,-45.90`. 한 줄에 값 하나만 보내는 이전 스케치는 호환되지 않습니다.
 
 1. Arduino를 USB로 연결하고 Arduino IDE의 시리얼 모니터·플로터를 닫습니다.
-2. 이 폴더에서 `python3 -m http.server 8000`을 실행합니다.
+2. 프로젝트 최상단에서 `python3 -m http.server 8000`을 실행합니다.
 3. 데스크톱 Chrome 또는 Edge에서 `http://localhost:8000`을 엽니다.
 4. 화면 오른쪽 아래 **휠 연결 → Arduino 연결**을 누르고 해당 USB 시리얼 포트를 선택합니다.
 5. 왼쪽·오른쪽 휠을 하나씩 돌려 표시되는 각도를 확인합니다. 첫 번째 CSV 값이 왼쪽 휠입니다.
@@ -118,8 +118,40 @@ Uno R3 / ATmega328P Nano에 두 각도를 CSV로 보내는 스케치를 업로�
 새로고침하거나 USB를 재연결한 뒤에는 연결 버튼으로 다시 포트를 선택하세요.
 Unity·시리얼 모니터·다른 브라우저 창과 같은 포트를 동시에 열 수 없습니다.
 
-- `wheel-motion.js`: CSV 검증, 각도 차분, 4샘플 평균, 입력 시간 초과 처리
-- `wheel-controller.js`: Web Serial 연결, 방향/감도 설정, 홈 시작 및 미니게임 전달
+- `js/game/wheel-motion.js`: CSV 검증, 각도 차분, 4샘플 평균, 입력 시간 초과 처리
+- `js/game/wheel-controller.js`: Web Serial 연결, 방향/감도 설정, 홈 시작 및 미니게임 전달
 
 Web Serial은 보안 컨텍스트와 사용자의 기기 선택이 필요합니다.
 공식 문서: https://developer.chrome.com/docs/capabilities/serial
+
+## 폴더 구조
+
+문서 안의 경로는 프로젝트 최상단 기준입니다.
+
+```text
+thismidge/
+├── index.html
+├── admin.html
+├── generate.html
+├── css/                 # game.css, admin.css, generate.css
+├── js/
+│   ├── game/            # 게임 공통 기능과 두 휠 연결
+│   ├── admin.js
+│   ├── generate.js
+│   ├── settings.js
+│   └── minigame-manager.js
+├── minigames/
+│   └── minigame_00/     # minigame_00.html, .js, .css
+├── content/
+│   └── text.js          # 단계별 문장 편집
+├── assets/
+│   ├── fonts/
+│   └── icons/
+├── vendor/
+│   └── matter/
+└── docs/
+    ├── README.md
+    └── recordings/
+```
+
+미니게임을 추가할 때는 `minigames/` 아래에 게임별 폴더를 만들고, `js/game/world.js`에서 진입 경로를 연결합니다. 스크립트의 URL과 iframe 경로는 스크립트 파일 위치가 아닌 HTML 위치를 기준으로 해석됩니다.

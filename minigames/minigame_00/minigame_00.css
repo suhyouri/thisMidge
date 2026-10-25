@@ -1,0 +1,8 @@
+#screen { background:#ffe34d; }
+#word-stack { position:absolute; inset:0; width:1024px; height:600px; image-rendering:pixelated; }
+#minigame-title { position:absolute; top:20px; left:24px; margin:0; line-height:0; }
+#minigame-title canvas,#stack-guide { display:block; height:18px; width:auto; image-rendering:pixelated; filter:invert(1); }
+#minigame-title { background:#ffe34d; box-shadow:0 0 0 8px #ffe34d; }
+#stack-guide { background:#001cb2; box-shadow:0 0 0 8px #001cb2; }
+#stack-guide { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 0 0 16px #001cb2; pointer-events:none; }
+#stack-guide[hidden] { display:none; }

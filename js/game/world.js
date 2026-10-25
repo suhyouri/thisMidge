@@ -2,7 +2,7 @@
 window.mayflyWorld = (() => {
   const WIDTH = 8000, HEIGHT = 6000;
   const RADII = [750, 1500, 2250];
-  // The author edits only text.js. Empty entries never enter a stage's deck.
+  // The author edits only content/text.js. Empty entries never enter a stage's deck.
   const TEXTS = Array.from({length:4}, (_, index) => {
     const entries = window.MAYFLY_TEXTS?.[`stage${index+1}`];
     return Array.isArray(entries) ? entries.filter(text=>typeof text==='string'&&text.trim()).map(text=>text.trim()) : [];
@@ -10,7 +10,7 @@ window.mayflyWorld = (() => {
   const decks = [[], [], [], []];
   function nextText(stage) {
     const pool = TEXTS[stage-1];
-    if(!pool.length) return `${stage}단계의 문장을 text.js에 입력해 주세요.`;
+    if(!pool.length) return `${stage}단계의 문장을 content/text.js에 입력해 주세요.`;
     const deck=decks[stage-1];
     if(!deck.length) {
       deck.push(...pool);
@@ -145,7 +145,7 @@ window.mayflyWorld = (() => {
       frame.forEach((row,y)=>row.forEach((value,x)=>{if(value)context.fillRect(x,y,1,1);}));
       element.append(canvas);
     });
-    const point={id:'mini_00',kind:'minigame',color:miniIcon.color,destination:'./minigame_00.html',stage:1,x,y,element,armed:true};
+    const point={id:'mini_00',kind:'minigame',color:miniIcon.color,destination:'./minigames/minigame_00/minigame_00.html',stage:1,x,y,element,armed:true};
     points.push(point);layer.append(element);
     element.addEventListener('click',()=>activate(point));
   }
