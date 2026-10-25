@@ -20,5 +20,7 @@ window.mayflyBitmapText = (() => {
     });
     context.putImageData(pixels, 0, 0);
   }
+  const title = document.getElementById('title-pixels');
+  if (title) draw(title, document.getElementById('site-title').getAttribute('aria-label'));
   return { draw };
 })();

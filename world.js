@@ -25,29 +25,43 @@ window.mayflyWorld = (() => {
   const dialogue = document.getElementById('dialogue');
   const textElement = document.getElementById('dialogue-text');
   const textCanvas = document.getElementById('dialogue-pixels');
-  const whiteout = document.getElementById('whiteout');
-  const whiteContext = whiteout.getContext('2d');
+  const transitionCanvas = document.getElementById('transition-overlay');
+  const transitionContext = transitionCanvas.getContext('2d');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const bayer = [0,32,8,40,2,34,10,42,48,16,56,24,50,18,58,26,12,44,4,36,14,46,6,38,60,28,52,20,62,30,54,22,3,35,11,43,1,33,9,41,51,19,59,27,49,17,57,25,15,47,7,39,13,45,5,37,63,31,55,23,61,29,53,21];
   const points = [];
   let open = false, transition = null, currentText = '', previousFocus = null;
   let closeTimer = null;
+  let currentX=WIDTH/2,currentY=HEIGHT/2;
   const TEXT_DURATION = 5000;
   function stageAt(x, y) {
     const radius = Math.hypot(x - WIDTH / 2, y - HEIGHT / 2);
     const index = RADII.findIndex(edge => radius < edge);
     return index < 0 ? 4 : index + 1;
   }
-  function drawMarker(canvas, stage) {
-    canvas.width = canvas.height = 32;
+  function drawMarker(canvas, stage, alternate=false) {
+    // A 16 × 16 light: dense bright core, sparse halo, 4px display cells.
+    const size=16;
+    canvas.width = canvas.height = size;
     const context = canvas.getContext('2d');
-    const pixels = context.createImageData(32,32);
-    for(let y=0;y<32;y++) for(let x=0;x<32;x++) {
-      const r=Math.hypot(x-15.5,y-15.5);
-      const density = r < 3 ? 1 : r > 14.5 ? 0 : .7 * Math.min(1,(14.5-r)/3);
-      if(density > (bayer[(y%8)*8+x%8]+.5)/64) {
-        const i=(y*32+x)*4, color=stage<3?255:24;
-        pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=color;pixels.data[i+3]=255;
+    const pixels = context.createImageData(size,size);
+    for(let y=0;y<size;y++) for(let x=0;x<size;x++) {
+      const radius=Math.hypot(x-7.5,y-7.5);
+      const density=radius<1.8?1:Math.pow(Math.max(0,1-(radius-1.8)/5.7),1.6);
+      if(density>(bayer[(y%8)*8+x%8]+.5)/64) {
+        const i=(y*size+x)*4;
+        pixels.data[i]=255;
+        pixels.data[i+1]=255;
+        pixels.data[i+2]=255;
+        pixels.data[i+3]=255;
+      }
+    }
+    if(alternate) {
+      // Keep the light's core intact; only five halo pixels change.
+      for(const [x,y] of [[5,4],[10,5],[12,7],[6,11],[10,11]]) {
+        const i=(y*size+x)*4;
+        const value=pixels.data[i+3]?0:255;
+        pixels.data[i]=pixels.data[i+1]=pixels.data[i+2]=pixels.data[i+3]=value;
       }
     }
     context.putImageData(pixels,0,0);
@@ -64,7 +78,7 @@ window.mayflyWorld = (() => {
     textCanvas.classList.toggle('scrolling',overflow>0);
   }
   function show(point) {
-    if(transition || open) return;
+    if(transition || open || window.mayflyHome?.waiting) return;
     point.visited=true;point.armed=false;point.element.classList.add('visited');
     previousFocus=document.activeElement;
     currentText=nextText(point.stage);textElement.textContent=currentText;
@@ -79,6 +93,7 @@ window.mayflyWorld = (() => {
     if(!open) return;
     clearTimeout(closeTimer);closeTimer=null;
     dialogue.hidden=true;open=false;document.body.classList.remove('dialogue-open');
+    window.dispatchEvent(new Event('mayfly-story-read'));
     if(previousFocus?.isConnected && previousFocus !== document.body) previousFocus.focus({preventScroll:true});
     window.dispatchEvent(new Event('mayfly-dialogue'));
   }
@@ -98,48 +113,163 @@ window.mayflyWorld = (() => {
       element.type='button';element.className='discovery';element.dataset.stage=stage;
       element.setAttribute('aria-label',`${stage}단계의 이야기 ${i+1} 열기`);
       element.style.left=x+'px';element.style.top=y+'px';
-      const canvas=document.createElement('canvas');canvas.setAttribute('aria-hidden','true');drawMarker(canvas,stage);element.append(canvas);
+      element.style.setProperty('--twinkle-delay',`${-Math.random()*.8}s`);
+      for(let frame=0;frame<2;frame++) {
+        const canvas=document.createElement('canvas');
+        canvas.className=frame?'trigger-frame alternate':'trigger-frame';
+        canvas.setAttribute('aria-hidden','true');
+        drawMarker(canvas,stage,frame===1);element.append(canvas);
+      }
       const point={stage,x,y,element,visited:false,armed:true};points.push(point);
       element.addEventListener('click',()=>show(point));layer.append(element);
     }
   }
-  function resizeWhiteout() {whiteout.width=Math.ceil(innerWidth/8);whiteout.height=Math.ceil(innerHeight/8);}
-  function drawWhiteout(level) {
-    const image=whiteContext.createImageData(whiteout.width,whiteout.height);
-    for(let y=0;y<whiteout.height;y++) for(let x=0;x<whiteout.width;x++) {
-      if(level>(bayer[(y%8)*8+x%8]+.5)/64) {
-        const i=(y*whiteout.width+x)*4;
-        image.data[i]=image.data[i+1]=image.data[i+2]=image.data[i+3]=255;
+  // A separate minigame object; story triggers and their time rewards stay independent.
+  const miniIcon=window.MAYFLY_MINI_00;
+  if(miniIcon) {
+    const x=WIDTH/2+240,y=HEIGHT/2-120;
+    const element=document.createElement('button');
+    element.type='button';element.className='discovery minigame-trigger';
+    element.id='mini_00';element.dataset.stage='1';element.dataset.kind='minigame';
+    element.setAttribute('aria-label','미니게임 mini_00');
+    element.style.left=x+'px';element.style.top=y+'px';
+    element.style.setProperty('--twinkle-duration',`${miniIcon.frameDuration*2}ms`);
+    element.style.setProperty('--twinkle-half',`${miniIcon.frameDuration}ms`);
+    miniIcon.frames.forEach((frame,index)=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=miniIcon.width;canvas.height=miniIcon.height;
+      canvas.className=index?'trigger-frame alternate':'trigger-frame';
+      canvas.setAttribute('aria-hidden','true');
+      const context=canvas.getContext('2d');
+      context.fillStyle=miniIcon.color;
+      frame.forEach((row,y)=>row.forEach((value,x)=>{if(value)context.fillRect(x,y,1,1);}));
+      element.append(canvas);
+    });
+    const point={id:'mini_00',kind:'minigame',color:miniIcon.color,destination:'./minigame_00.html',stage:1,x,y,element,armed:true};
+    points.push(point);layer.append(element);
+    element.addEventListener('click',()=>activate(point));
+  }
+  function activate(point) {
+    if(open||transition||window.mayflyHome?.waiting||window.mayflyMinigame.active||!point.armed)return;
+    if(point.kind==='minigame') {
+      point.armed=false;
+      // Keep the event available for minigame integrations.
+      window.dispatchEvent(new CustomEvent('mayfly-minigame',{detail:{id:point.id,stage:point.stage,x:point.x,y:point.y}}));
+      beginWipe(point.color,()=>window.mayflyMinigame.open(point));
+      return;
+    }
+    show(point);
+  }
+  function beginWipe(color,onComplete) {
+    if(transition)return;
+    if(reduced.matches){onComplete();return;}
+    transition={kind:'wipe',elapsed:0,color,onComplete};
+    drawWipe(0,color);transitionCanvas.hidden=false;
+  }
+  function resizeTransition() {
+    const screen=document.getElementById('screen');
+    transitionCanvas.width=Math.ceil(screen.clientWidth/4);
+    transitionCanvas.height=Math.ceil(screen.clientHeight/4);
+  }
+  const BLINK_CLOSE=.18, BLINK_HOLD=.08, BLINK_OPEN=.28;
+  const BLINK_DURATION=BLINK_CLOSE+BLINK_HOLD+BLINK_OPEN;
+  function blinkProgress(elapsed) {
+    if(elapsed<BLINK_CLOSE)return elapsed/BLINK_CLOSE;
+    if(elapsed<BLINK_CLOSE+BLINK_HOLD)return 1;
+    return Math.max(0,1-(elapsed-BLINK_CLOSE-BLINK_HOLD)/BLINK_OPEN);
+  }
+  function drawTransition(progress) {
+    // Two eyelids close into a horizontal slit, then reopen on the new position.
+    const width=transitionCanvas.width,height=transitionCanvas.height;
+    const image=transitionContext.createImageData(width,height);
+    const eased=progress*progress*(3-2*progress),edge=1;
+    const gap=(height/2+edge)*(1-eased)-edge/2;
+    const shade=transition?.shade??255;
+    for(let y=0;y<height;y++)for(let x=0;x<width;x++) {
+      const distance=Math.abs(y+.5-height/2);
+      const density=Math.max(0,Math.min(1,(distance-gap)/edge+.5));
+      if(density>(bayer[(y%8)*8+x%8]+.5)/64) {
+        const i=(y*width+x)*4;
+        image.data[i]=image.data[i+1]=image.data[i+2]=shade;
+        image.data[i+3]=255;
       }
     }
-    whiteContext.putImageData(image,0,0);
+    transitionContext.putImageData(image,0,0);
   }
-  resizeWhiteout();
-  window.addEventListener('resize',()=>{resizeWhiteout();drawText();});
+  const WIPE_DURATION=1;
+  function drawWipe(progress,color) {
+    const width=transitionCanvas.width,height=transitionCanvas.height;
+    const image=transitionContext.createImageData(width,height);
+    const edge=12,band=width*.25;
+    const front=width+edge/2-(width+band+edge)*progress;
+    const rgb=[1,3,5].map(offset=>parseInt(color.slice(offset,offset+2),16));
+    for(let y=0;y<height;y++)for(let x=0;x<width;x++) {
+      const threshold=(bayer[(y%8)*8+x%8]+.5)/64;
+      const cover=Math.max(0,Math.min(1,(x+.5-front)/edge+.5));
+      if(cover<=threshold)continue;
+      const white=Math.max(0,Math.min(1,(x+.5-front-band)/edge+.5))>threshold;
+      const i=(y*width+x)*4;
+      image.data[i]=white?255:rgb[0];image.data[i+1]=white?255:rgb[1];image.data[i+2]=white?255:rgb[2];image.data[i+3]=255;
+    }
+    transitionContext.putImageData(image,0,0);
+  }
+  resizeTransition();
+  window.addEventListener('resize',()=>{
+    resizeTransition();
+    if(transition?.kind==='wipe')drawWipe(Math.min(1,transition.elapsed/WIPE_DURATION),transition.color);
+    else if(transition)drawTransition(blinkProgress(transition.elapsed));
+    drawText();
+  });
   return {
     stageAt,
-    get paused(){return open || transition!==null;},
+    get paused(){return open || transition!==null || window.mayflyMinigame.active || !!window.mayflyAdmin?.paused || !!window.mayflyHome?.waiting;},
     get transitioning(){return transition!==null;},
-    wrap(teleport) {
+    reset() {
+      clearTimeout(closeTimer);closeTimer=null;
+      open=false;currentText='';previousFocus=null;dialogue.hidden=true;
+      document.body.classList.remove('dialogue-open');
+      transition=null;transitionCanvas.hidden=true;
+      currentX=WIDTH/2;currentY=HEIGHT/2;
+      decks.forEach(deck=>{deck.length=0;});
+      points.forEach(point=>{point.armed=true;point.visited=false;point.element.classList.remove('visited');});
+    },
+    wipe:beginWipe,
+    wrap(teleport,onComplete) {
       if(transition) return;
-      if(reduced.matches) {teleport();return;}
-      transition={elapsed:0,teleport,jumped:false};whiteout.hidden=false;
+      if(reduced.matches) {teleport();onComplete?.();return;}
+      transition={elapsed:0,teleport,onComplete,jumped:false,shade:stageAt(currentX,currentY)<=2?255:0};
+      drawTransition(0);transitionCanvas.hidden=false;
     },
     update(dt,x,y) {
+      currentX=x;currentY=y;
+      if(window.mayflyAdmin?.paused||window.mayflyHome?.waiting)return;
       if(transition) {
         transition.elapsed+=dt;
         const t=transition.elapsed;
-        if(t>=.4&&!transition.jumped) {transition.teleport();transition.jumped=true;}
-        const coverage=t<.35?t/.35:t<.5?1:Math.max(0,1-(t-.5)/.35);
-        drawWhiteout(coverage);
-        if(t>=.85){transition=null;whiteout.hidden=true;}
+        if(transition.kind==='wipe') {
+          drawWipe(Math.min(1,t/WIPE_DURATION),transition.color);
+          if(t>=WIPE_DURATION) {
+            const onComplete=transition.onComplete;
+            transition=null;
+            onComplete();transitionCanvas.hidden=true;
+          }
+          return;
+        }
+        drawTransition(blinkProgress(t));
+        if(t>=BLINK_CLOSE&&!transition.jumped) {
+          transition.teleport();transition.jumped=true;
+        }
+        if(t>=BLINK_DURATION){
+          const onComplete=transition.onComplete;
+          transition=null;transitionCanvas.hidden=true;onComplete?.();
+        }
         return;
       }
-      if(open) return;
+      if(open||window.mayflyMinigame.active) return;
       for(const point of points) {
         const distance=Math.hypot(x-point.x,y-point.y);
         if(distance>95) point.armed=true;
-        if(point.armed&&distance<55) {show(point);break;}
+        if(point.armed&&distance<55) {activate(point);break;}
       }
     },
   };

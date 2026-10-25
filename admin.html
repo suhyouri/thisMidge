@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="끝없이 넓은 흰 종이 위, 하루살이의 작은 비행.">
+  <title>이 미지 · 관리자</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./admin.css">
+</head>
+<body class="home-waiting">
+  <div id="display-frame">
+  <div id="screen" aria-label="1024 × 600 LCD 화면">
+  <main id="viewport" tabindex="-1" aria-label="하루살이를 따라가는 8000 × 6000 픽셀의 흰 종이">
+    <div id="paper">
+      <canvas id="stage-background" aria-hidden="true"></canvas>
+      <div id="discoveries" aria-label="종이 위의 이야기"></div>
+      <div id="mayfly" role="img" aria-label="왼쪽 위로 천천히 날아가는, 양쪽 날개를 가진 하루살이">
+        <canvas id="sprite" width="16" height="16" aria-hidden="true"></canvas>
+      </div>
+      <div id="life-effects" aria-hidden="true"></div>
+    </div>
+  </main>
+  <div id="life-hud" role="timer" aria-live="off" aria-label="남은시간: 60초"><canvas id="life-pixels" aria-hidden="true"></canvas></div>
+  <h1 id="site-title" aria-label="이 미지 This Midge"><canvas id="title-pixels" aria-hidden="true"></canvas></h1>
+  <nav id="game-controls" aria-label="게임 메뉴">
+    <button id="home-button" type="button" aria-label="Home · 처음 화면으로" title="처음 화면으로">
+      <svg viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M3 0h2v1h1v1h1v1h1v2H7v3H5V5H3v3H1V5H0V3h1V2h1V1h1z"/></svg>
+    </button>
+  <aside id="wind-panel" aria-label="현재 위치의 바람">
+    <button id="wind-connect" type="button" aria-label="현재 위치 바람 연결" title="현재 위치 바람 연결" aria-describedby="wind-status wind-credit">
+      <svg viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges">
+        <defs>
+          <pattern id="wind-dither" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 0h1v1H0z M2 2h1v1H2z" fill="currentColor" opacity=".4"/></pattern>
+          <clipPath id="wind-circle"><circle cx="16" cy="16" r="15"/></clipPath>
+        </defs>
+        <g clip-path="url(#wind-circle)"><path fill="url(#wind-dither)" d="M0 0h32v32H0z"/></g>
+        <g fill="currentColor">
+          <path d="M5 10h13V8h-3V6h5v2h2v4H5z"/>
+          <path d="M3 15h22v-3h-3v-2h5v2h2v5H3z"/>
+          <path d="M6 20h16v6h-2v2h-5v-2h-2v-3h2v2h4v-3H6z"/>
+          <path d="M3 20h1v2H3z M8 25h2v2H8z M24 23h1v1h-1z"/>
+        </g>
+      </svg>
+    </button>
+    <p id="wind-status" role="status">위치 허용 후 주변 바람을 반영해요</p>
+    <small id="wind-credit">대략적인 위치를 <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>에 보내 바람을 조회합니다.</small>
+  </aside>
+  </nav>
+  <section id="home-screen" aria-label="게임 시작 대기">
+    <h2 id="home-title" aria-label="이 미지 This Midge"><canvas id="home-title-pixels" aria-hidden="true"></canvas></h2>
+    <img id="home-sprite" width="64" height="64" alt="멈춰 있는 하루살이">
+    <div id="home-instructions">
+      <p><span class="sr-only">휠을 돌려 시작하세요.</span><canvas data-home-text="휠을 돌려 시작하세요." aria-hidden="true"></canvas></p>
+      <p><span class="sr-only">왼쪽 휠 바깥으로: 좌회전 · 오른쪽 휠 바깥으로: 우회전</span><canvas data-home-text="왼쪽 휠 바깥으로: 좌회전 · 오른쪽 휠 바깥으로: 우회전" aria-hidden="true"></canvas></p>
+      <p><span class="sr-only">양쪽 바깥으로: 전진 · 양쪽 안쪽으로: 후진</span><canvas data-home-text="양쪽 바깥으로: 전진 · 양쪽 안쪽으로: 후진" aria-hidden="true"></canvas></p>
+    </div>
+  </section>
+  <section id="dialogue" role="dialog" tabindex="-1" aria-label="발견한 이야기" aria-describedby="dialogue-text" hidden>
+    <p id="dialogue-text" class="sr-only"></p>
+    <div id="dialogue-line"><canvas id="dialogue-pixels" aria-hidden="true"></canvas></div>
+  </section>
+  <section id="minigame-overlay" role="dialog" aria-label="미니게임" hidden>
+    <iframe id="minigame-frame" title="mini_00 미니게임"></iframe>
+    <div id="minigame-timer" role="timer" aria-live="off"><canvas id="minigame-timer-pixels" aria-hidden="true"></canvas></div>
+  </section>
+  <canvas id="transition-overlay" aria-hidden="true" hidden></canvas>
+  </div>
+  </div>
+  <button id="admin-open" type="button">시간 설정</button>
+  <dialog id="admin-settings" aria-labelledby="admin-heading">
+    <header><h2 id="admin-heading">시간 설정</h2><button id="admin-close" type="button" aria-label="설정 닫기">닫기</button></header>
+    <p class="admin-note">설정창을 연 동안 게임이 일시정지됩니다.</p>
+    <form id="admin-default-form">
+      <label for="admin-start-seconds">시작 · 리셋 시간 <span>초</span></label>
+      <div class="admin-field"><input id="admin-start-seconds" type="number" min="1" max="86400" step="1" required><button type="submit">저장</button></div>
+      <p>다음 실행, 리스폰, 미니게임 복귀 시 적용합니다.</p>
+    </form>
+    <form id="admin-current-form">
+      <label for="admin-current-seconds">현재 남은 시간 <span>초</span></label>
+      <div class="admin-field"><input id="admin-current-seconds" type="number" min="0" max="86400" step="1" required><button type="submit">지금 적용</button></div>
+      <p>현재 위치를 유지하고 남은 시간만 바꿉니다.</p>
+    </form>
+    <footer><button id="admin-reset" type="button">기본 60초로 복원</button><a id="admin-game-link" href="./index.html">일반 게임 열기</a></footer>
+    <p id="admin-status" role="status"></p>
+    <small>설정은 이 브라우저에 저장됩니다. 일반 게임은 위 링크로 열면 설정이 전달됩니다. 미니게임 진행 시간은 별도로 60초입니다.</small>
+  </dialog>
+  <script src="./display.js"></script>
+  <script src="./stage-background.js"></script>
+  <script src="./fonts/unicode-asian.js"></script>
+  <script src="./bitmap-text.js"></script>
+  <script src="./text.js"></script>
+  <script src="./settings.js"></script>
+  <script src="./life.js"></script>
+  <script src="./assets/mini_00.js"></script>
+  <script src="./minigame.js?v=stack1"></script>
+  <script src="./world.js?v=stack1"></script>
+  <script src="./wind.js"></script>
+  <script src="./home.js"></script>
+  <script src="./dither.js?v=home1"></script>
+  <script src="./wheel-motion.js"></script>
+  <script src="./wheel-controller.js"></script>
+  <script src="./flight.js"></script>
+  <script src="./admin.js"></script>
+</body>
+</html>

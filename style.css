@@ -1,13 +1,16 @@
-:root { color-scheme: light; background: #fff; }
+:root { color-scheme: light; background: #101010; }
 * { box-sizing: border-box; }
-html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #fff; }
-#viewport { position: fixed; inset: 0; overflow: hidden; background: #fff; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #101010; }
+body { display: grid; place-items: center; }
+#display-frame { position: relative; width: 1024px; height: 600px; overflow: hidden; }
+#screen { position: relative; width: 1024px; height: 600px; overflow: hidden; transform-origin: top left; }
+#viewport { position: absolute; inset: 0; overflow: hidden; background: #fff; }
 #paper { position: absolute; top: 0; left: 0; width: 8000px; height: 6000px; background: radial-gradient(circle 3000px at center, #000 0% 25%, #555 25% 50%, #aaa 50% 75%, #fff 75% 100%); transform-origin: 0 0; will-change: transform; }
-#mayfly { position: absolute; top: 0; left: 0; width: 58.5px; height: 72px; transform-origin: 50% 50%; will-change: transform; }
+#mayfly { position: absolute; top: 0; left: 0; width: 64px; height: 64px; transform-origin: 50% 50%; will-change: transform; }
 #sprite { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 
 
-#wind-panel { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 2; color: #ff84d3; font: 12px/1.5 system-ui, sans-serif; }
+#wind-panel { position: absolute; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 2; color: #ff84d3; font: 12px/1.5 system-ui, sans-serif; }
 #wind-connect { display: grid; place-items: center; width: 52px; height: 52px; padding: 6px; border: 1px solid #ff84d370; border-radius: 50%; background: #151515ed; color: inherit; cursor: pointer; box-shadow: 0 2px 12px #0003; transition: background .15s, border-color .15s; }
 #wind-connect svg { display: block; width: 36px; height: 36px; }
 #wind-connect:hover { background: #30212b; border-color: #ff84d3; }
@@ -20,17 +23,94 @@ html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background:
 #wind-panel a { color: inherit; }
 
 #discoveries { position: absolute; inset: 0; }
-.discovery { position: absolute; width: 72px; height: 72px; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.discovery { position: absolute; width: 64px; height: 64px; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
 .discovery canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
 .discovery.visited { opacity: .4; }
 .discovery:hover, .discovery:focus-visible { opacity: 1; outline: 1px dashed #ff84d3; outline-offset: 5px; }
-#dialogue { position: fixed; z-index: 5; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(630px, calc(70vw - 22.4px)); padding: 14px 20px; border: 2px solid #fff; background: #000; color: #fff; box-shadow: 0 0 0 2px #000; outline: none; }
-#dialogue[hidden], #whiteout[hidden] { display: none; }
+#dialogue { position: absolute; z-index: 5; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(630px, calc(70% - 22.4px)); padding: 14px 20px; border: 2px solid #fff; background: #000; color: #fff; box-shadow: 0 0 0 2px #000; outline: none; }
+#dialogue[hidden], #transition-overlay[hidden] { display: none; }
 #dialogue-line { overflow: hidden; width: 100%; height: 36px; }
 #dialogue-pixels { display: block; image-rendering: pixelated; }
 #dialogue-pixels.scrolling { animation: dialogue-scroll 5s linear both; }
 @keyframes dialogue-scroll { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(var(--text-travel)); } }
 @media (prefers-reduced-motion: reduce) { #dialogue-pixels.scrolling { animation: none; } }
 .dialogue-open #wind-panel { visibility: hidden; }
-#whiteout { position: fixed; inset: 0; z-index: 10; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: auto; }
+#transition-overlay { position: absolute; inset: 0; z-index: 10; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+
+#stage-background { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
+
+#site-title { position: absolute; top: 20px; right: 24px; z-index: 2; margin: 0; line-height: 0; pointer-events: none; mix-blend-mode: difference; }
+#title-pixels { display: block; height: 18px; width: auto; image-rendering: pixelated; }
+
+.discovery .trigger-frame { position:absolute; inset:0; animation:trigger-blink var(--twinkle-duration,.8s) steps(1,end) infinite; animation-delay:var(--twinkle-delay,0s); }
+.discovery .trigger-frame.alternate { animation-delay:calc(var(--twinkle-delay,0s) - var(--twinkle-half,.4s)); }
+@keyframes trigger-blink { 0%,100% { opacity:1; } 50% { opacity:0; } }
+@media(prefers-reduced-motion:reduce) {
+  .discovery .trigger-frame { animation:none; opacity:1; }
+  .discovery .trigger-frame.alternate { opacity:0; }
+}
+
+#life-hud { position:absolute; top:20px; left:24px; z-index:2; line-height:0; pointer-events:none; mix-blend-mode:difference; }
+#life-pixels { display:block; width:auto; height:18px; image-rendering:pixelated; }
+
+#life-effects { position:absolute; top:0; left:0; z-index:1; pointer-events:none; }
+.life-bonus { position:absolute; left:0; top:0; display:block; height:18px; width:auto; image-rendering:pixelated; filter:drop-shadow(1px 1px 0 #0008); animation:life-bonus-rise 1.2s steps(9,end) forwards; }
+@keyframes life-bonus-rise { 0% { transform:translateY(0); opacity:1; } 100% { transform:translateY(-36px); opacity:0; } }
+@media(prefers-reduced-motion:reduce) {
+  .life-bonus { animation-name:life-bonus-fade; }
+  @keyframes life-bonus-fade { from { opacity:1; } to { opacity:0; } }
+}
+
+/* mini_00 stays on its first frame. */
+#mini_00 .trigger-frame { animation: none; opacity: 1; }
+#mini_00 .trigger-frame.alternate { display: none; }
+
+/* life-effects is anchored at insect center + (40, -24). */
+.respawn-message { position:absolute; left:-40px; top:68px; transform:translateX(-50%); height:18px; width:auto; image-rendering:pixelated; pointer-events:none; filter:drop-shadow(1px 1px 0 #000); animation:respawn-message-fade 5s linear forwards; }
+@keyframes respawn-message-fade { 0%,90% { opacity:1; } 100% { opacity:0; } }
+
+#minigame-overlay { position:absolute; inset:0; z-index:6; background:#fff; }
+#minigame-overlay[hidden] { display:none; }
+#minigame-frame { display:block; width:100%; height:100%; border:0; background:#fff; }
+#minigame-timer { position:absolute; top:20px; right:24px; pointer-events:none; }
+#minigame-timer-pixels { display:block; height:18px; width:auto; image-rendering:pixelated; filter:invert(1); }
+
+#game-controls { position:absolute; left:24px; bottom:max(20px,env(safe-area-inset-bottom)); z-index:9; display:flex; align-items:center; gap:12px; }
+#game-controls #wind-panel { position:relative; left:auto; bottom:auto; transform:none; }
+#game-controls #wind-status,#game-controls #wind-credit { left:0; transform:none; }
+#home-button { display:grid; place-items:center; width:52px; height:52px; padding:8px; border:1px solid #ff84d370; border-radius:50%; background:#151515ed; color:#ff84d3; cursor:pointer; }
+#home-button svg { width:32px; height:32px; }
+#home-button:hover { background:#30212b; border-color:#ff84d3; }
+#home-button:focus-visible { outline:2px solid #ff84d3; outline-offset:4px; }
+#home-screen { position:absolute; inset:0; z-index:8; background:#000; color:#fff; }
+#home-screen[hidden] { display:none; }
+#home-title { position:absolute; top:96px; left:50%; transform:translateX(-50%); margin:0; line-height:0; }
+#home-title-pixels { display:block; height:36px; width:auto; image-rendering:pixelated; }
+#home-sprite { position:absolute; left:50%; top:300px; transform:translateX(-50%); width:64px; height:64px; image-rendering:pixelated; }
+#home-instructions { position:absolute; top:398px; left:0; right:0; display:flex; flex-direction:column; align-items:center; gap:16px; }
+#home-instructions p { margin:0; line-height:0; }
+#home-instructions canvas { display:block; height:18px; width:auto; image-rendering:pixelated; }
+.home-waiting #game-controls,.home-waiting #life-hud,.home-waiting #site-title { visibility:hidden; }
+
+/* Navigation colors: white Home and wind. */
+#home-button { color:#fff; border-color:#ffffff70; }
+#home-button:hover { background:#282828; border-color:#fff; }
+#home-button:focus-visible { outline-color:#fff; }
+#game-controls #wind-panel { color:#fff; }
+#wind-connect { border-color:#ffffff70; }
+#wind-connect:hover { background:#282828; border-color:#fff; }
+#wind-connect:focus-visible { outline-color:#fff; }
+
+/* Available on the home screen and while the minigame iframe has focus. */
+#wheel-controller { position:absolute; right:24px; bottom:20px; z-index:9; color:#fff; font:12px/1.5 system-ui,sans-serif; }
+#wheel-controller summary { padding:8px 12px; border:1px solid #ffffff70; border-radius:6px; background:#151515ed; cursor:pointer; }
+#wheel-controller[open] { width:280px; }
+.wheel-settings { padding:12px; margin-top:6px; border:1px solid #ffffff70; border-radius:6px; background:#151515f5; }
+.wheel-settings p { margin:8px 0; }
+.wheel-settings label { display:block; margin:8px 0; }
+.wheel-settings button,.wheel-settings select { padding:5px 8px; color:#fff; background:#282828; border:1px solid #777; border-radius:4px; font:inherit; }
+.wheel-settings button { cursor:pointer; }
+.wheel-settings button:disabled { opacity:.5; cursor:default; }
+#wheel-angles { font-variant-numeric:tabular-nums; }
+.wheel-help { color:#bbb; }

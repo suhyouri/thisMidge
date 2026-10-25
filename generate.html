@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>이 미지 · paint</title>
+  <link rel="stylesheet" href="generate.css">
+</head>
+<body>
+  <main class="paint-panel">
+    <header class="paint-header"><h1><svg viewBox="0 0 16 16" aria-hidden="true" shape-rendering="crispEdges"><path d="M11 1h3v3h-2v2h-2v2H8v2H6v2H4v2H1v-3h2V9h2V7h2V5h2V3h2z M2 12h2v2H2z M7 14h7v1H7z" fill="currentColor"/></svg> paint</h1><span id="canvas-spec">16 × 16</span></header>
+    <div class="paint-body">
+      <div class="paint-edit-column">
+      <div class="name-row"><input id="object-name" type="text" value="small-light" maxlength="64" spellcheck="false" aria-label="오브젝트 이름"><button type="button" id="undo" title="되돌리기" aria-label="되돌리기" disabled>↶</button><button type="button" id="clear" title="모두 지우기" aria-label="모두 지우기">비우기</button></div>
+      <div class="canvas-size"><label>가로 <input id="canvas-width" type="number" min="4" max="64" step="1" value="16" aria-label="캔버스 가로 픽셀 수"></label><span>×</span><label>세로 <input id="canvas-height" type="number" min="4" max="64" step="1" value="16" aria-label="캔버스 세로 픽셀 수"></label><button type="button" id="resize-canvas">적용</button></div>
+      <div class="tool-row"><span class="toggle-hint">클릭하면 배경색 ↔ 타일색</span><span id="pixel-count">0 / 256</span></div>
+      <div id="editor-frame"><canvas id="editor" width="16" height="16" tabindex="0" aria-label="16×16 픽셀 편집기. 클릭하면 배경색과 타일색이 반전됩니다."></canvas><div id="grid" aria-hidden="true"></div></div>
+      <div class="under-canvas"><label><input id="grid-toggle" type="checkbox" checked> grid</label><span>한 칸 = 4px</span></div>
+      </div>
+      <aside class="paint-side-column" aria-label="미리보기와 애니메이션 설정">
+      <section class="preview-box" aria-label="실제 크기 미리보기"><div id="preview-world"><canvas id="preview" width="16" height="16" aria-label="64×64px 실제 크기 미리보기"></canvas></div><div class="preview-info"><span>preview</span><div class="swatches"><button type="button" data-background="#000000" class="swatch selected" style="--swatch:#000" aria-label="검정 배경" aria-pressed="true"></button><button type="button" data-background="#555555" class="swatch" style="--swatch:#555" aria-label="짙은 회색 배경" aria-pressed="false"></button><button type="button" data-background="#aaaaaa" class="swatch" style="--swatch:#aaa" aria-label="밝은 회색 배경" aria-pressed="false"></button><button type="button" data-background="#ffffff" class="swatch" style="--swatch:#fff" aria-label="흰색 배경" aria-pressed="false"></button></div></div><div class="palette-pickers"><label for="background-color">배경 <input type="color" id="background-color" value="#000000" aria-label="배경색 RGB 선택"></label><label for="tile-color">타일 <input type="color" id="tile-color" value="#ffffff" aria-label="타일색 RGB 선택"></label></div></section>
+      <section class="animation-box" aria-label="2프레임 애니메이션">
+        <div class="animation-heading"><span>animation · 2 frames</span><button type="button" id="copy-frame" title="현재 프레임을 다른 프레임으로 복사">프레임 복사</button></div>
+        <div class="frame-tabs" role="tablist" aria-label="편집할 프레임">
+          <button id="frame-0" type="button" role="tab" aria-selected="true" class="frame-tab active"><canvas id="thumb-0" width="16" height="16" aria-hidden="true"></canvas><span>frame 1</span></button>
+          <button id="frame-1" type="button" role="tab" aria-selected="false" class="frame-tab"><canvas id="thumb-1" width="16" height="16" aria-hidden="true"></canvas><span>frame 2</span></button>
+        </div>
+        <div class="playback"><button type="button" id="play" aria-pressed="true">일시정지</button><label><input id="fps" type="number" min="1" max="12" value="4" step="1" aria-label="초당 프레임 수"> fps</label><span id="preview-frame">frame 1</span></div>
+      </section>
+      <details class="generator-options"><summary>모양 만들기</summary><div class="option-content">
+        <label class="field">모양<select id="shape" aria-label="모양"><option value="glow">불빛</option><option value="ring">고리</option><option value="circle">원</option><option value="diamond">마름모</option><option value="star">별</option><option value="minigame">미니게임 반짝임</option></select></label>
+        <div class="range-field"><label for="radius">크기 <output id="radius-value"></output></label><input id="radius" type="range" min="1.5" max="7.5" value="5" step="0.25"></div>
+        <div class="range-field"><label for="density">밀도 <output id="density-value"></output></label><input id="density" type="range" min="0" max="1" value="0.75" step="0.05"></div>
+        <details class="fine-options"><summary>세부 조절</summary>
+          <div class="range-field"><label for="core">밝은 중심 <output id="core-value"></output></label><input id="core" type="range" min="0" max="3" value="1" step="0.25"></div>
+          <div class="range-field"><label for="softness">번짐 <output id="softness-value"></output></label><input id="softness" type="range" min="0.25" max="3" value="1.5" step="0.25"></div>
+          <div class="range-field"><label for="organic">불규칙함 <output id="organic-value"></output></label><input id="organic" type="range" min="0" max="1" value="0.15" step="0.05"></div>
+          <label class="field">패턴<select id="pattern" aria-label="패턴"><option value="bayer8">Bayer 8 × 8</option><option value="bayer4">Bayer 4 × 4</option><option value="random">Noise</option></select></label>
+          <label class="field">Seed<input id="seed" type="number" min="0" max="999999" value="1" step="1"></label>
+        </details>
+        <button type="button" id="variant" class="primary">다른 모양 만들기 ↻</button><p class="hint">설정을 바꾸면 새로 생성돼요. 직접 그린 내용은 되돌릴 수 있어요.</p>
+      </div></details>
+      <div class="save-row"><button type="button" id="png64" class="primary">현재 프레임 PNG</button><button type="button" id="json">애니메이션 JSON</button></div>
+      <details class="more-files"><summary>다른 저장 옵션</summary><label class="background-export"><input id="export-background" type="checkbox"> PNG에 배경색 포함</label><div class="more-buttons"><button type="button" id="png16">원본 PNG · 1배</button><button type="button" id="sheet">2프레임 시트 PNG</button><button type="button" id="copy">JSON 복사</button></div><label class="import-label">JSON 불러오기<input id="import" type="file" accept=".json,application/json"></label></details>
+      <p id="status" role="status">그리거나, 모양 만들기를 열어 시작하세요.</p>
+      </aside>
+    </div>
+  </main>
+  <script src="generate.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>더디다 · mini_00</title>
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    #screen { background:#ffe34d; }
+    #word-stack { position:absolute; inset:0; width:1024px; height:600px; image-rendering:pixelated; }
+    #minigame-title { position:absolute; top:20px; left:24px; margin:0; line-height:0; }
+    #minigame-title canvas,#stack-guide { display:block; height:18px; width:auto; image-rendering:pixelated; filter:invert(1); }
+    #minigame-title { background:#ffe34d; box-shadow:0 0 0 8px #ffe34d; }
+    #stack-guide { background:#001cb2; box-shadow:0 0 0 8px #001cb2; }
+    #stack-guide { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); box-shadow:0 0 0 16px #001cb2; pointer-events:none; }
+    #stack-guide[hidden] { display:none; }
+  </style>
+</head>
+<body>
+  <div id="display-frame">
+    <main id="screen" tabindex="-1" aria-label="휠을 돌려 더디다를 좌우로 쌓는 미니게임">
+      <canvas id="word-stack" width="1024" height="600" aria-hidden="true"></canvas>
+      <h1 id="minigame-title" aria-label="더디다"><canvas id="minigame-title-pixels" aria-hidden="true"></canvas></h1>
+      <canvas id="stack-guide" aria-hidden="true"></canvas>
+      <p class="sr-only">작은 단어들이 위쪽 중앙에서 이어진 줄기로 내려옵니다. 휠을 왼쪽으로 돌리면 왼쪽으로, 오른쪽으로 돌리면 오른쪽으로 쌓입니다.</p>
+    </main>
+  </div>
+  <script src="./display.js"></script>
+  <script src="./fonts/unicode-asian.js"></script>
+  <script src="./bitmap-text.js"></script>
+  <script src="./vendor/matter-0.20.0.min.js"></script>
+  <script src="./minigame_00.js?v=snake3"></script>
+</body>
+</html>

@@ -7,15 +7,25 @@
   <title>하루살이 · 흰 종이</title>
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
-  <main id="viewport" aria-label="하루살이를 따라가는 8000 × 6000 픽셀의 흰 종이">
+<body class="home-waiting">
+  <div id="display-frame">
+  <div id="screen" aria-label="1024 × 600 LCD 화면">
+  <main id="viewport" tabindex="-1" aria-label="하루살이를 따라가는 8000 × 6000 픽셀의 흰 종이">
     <div id="paper">
+      <canvas id="stage-background" aria-hidden="true"></canvas>
       <div id="discoveries" aria-label="종이 위의 이야기"></div>
       <div id="mayfly" role="img" aria-label="왼쪽 위로 천천히 날아가는, 양쪽 날개를 가진 하루살이">
-        <canvas id="sprite" width="13" height="16" aria-hidden="true"></canvas>
+        <canvas id="sprite" width="16" height="16" aria-hidden="true"></canvas>
       </div>
+      <div id="life-effects" aria-hidden="true"></div>
     </div>
   </main>
+  <div id="life-hud" role="timer" aria-live="off" aria-label="남은시간: 60초"><canvas id="life-pixels" aria-hidden="true"></canvas></div>
+  <h1 id="site-title" aria-label="이 미지 This Midge"><canvas id="title-pixels" aria-hidden="true"></canvas></h1>
+  <nav id="game-controls" aria-label="게임 메뉴">
+    <button id="home-button" type="button" aria-label="Home · 처음 화면으로" title="처음 화면으로">
+      <svg viewBox="0 0 8 8" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M3 0h2v1h1v1h1v1h1v2H7v3H5V5H3v3H1V5H0V3h1V2h1V1h1z"/></svg>
+    </button>
   <aside id="wind-panel" aria-label="현재 위치의 바람">
     <button id="wind-connect" type="button" aria-label="현재 위치 바람 연결" title="현재 위치 바람 연결" aria-describedby="wind-status wind-credit">
       <svg viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges">
@@ -35,17 +45,42 @@
     <p id="wind-status" role="status">위치 허용 후 주변 바람을 반영해요</p>
     <small id="wind-credit">대략적인 위치를 <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>에 보내 바람을 조회합니다.</small>
   </aside>
+  </nav>
+  <section id="home-screen" aria-label="게임 시작 대기">
+    <h2 id="home-title" aria-label="이 미지 This Midge"><canvas id="home-title-pixels" aria-hidden="true"></canvas></h2>
+    <img id="home-sprite" width="64" height="64" alt="멈춰 있는 하루살이">
+    <div id="home-instructions">
+      <p><span class="sr-only">휠을 돌려 시작하세요.</span><canvas data-home-text="휠을 돌려 시작하세요." aria-hidden="true"></canvas></p>
+      <p><span class="sr-only">왼쪽 휠 바깥으로: 좌회전 · 오른쪽 휠 바깥으로: 우회전</span><canvas data-home-text="왼쪽 휠 바깥으로: 좌회전 · 오른쪽 휠 바깥으로: 우회전" aria-hidden="true"></canvas></p>
+      <p><span class="sr-only">양쪽 바깥으로: 전진 · 양쪽 안쪽으로: 후진</span><canvas data-home-text="양쪽 바깥으로: 전진 · 양쪽 안쪽으로: 후진" aria-hidden="true"></canvas></p>
+    </div>
+  </section>
   <section id="dialogue" role="dialog" tabindex="-1" aria-label="발견한 이야기" aria-describedby="dialogue-text" hidden>
     <p id="dialogue-text" class="sr-only"></p>
     <div id="dialogue-line"><canvas id="dialogue-pixels" aria-hidden="true"></canvas></div>
   </section>
-  <canvas id="whiteout" aria-hidden="true" hidden></canvas>
+  <section id="minigame-overlay" role="dialog" aria-label="미니게임" hidden>
+    <iframe id="minigame-frame" title="mini_00 미니게임"></iframe>
+    <div id="minigame-timer" role="timer" aria-live="off"><canvas id="minigame-timer-pixels" aria-hidden="true"></canvas></div>
+  </section>
+  <canvas id="transition-overlay" aria-hidden="true" hidden></canvas>
+  </div>
+  </div>
+  <script src="./display.js"></script>
+  <script src="./stage-background.js"></script>
   <script src="./fonts/unicode-asian.js"></script>
   <script src="./bitmap-text.js"></script>
   <script src="./text.js"></script>
-  <script src="./world.js"></script>
+  <script src="./settings.js"></script>
+  <script src="./life.js"></script>
+  <script src="./assets/mini_00.js"></script>
+  <script src="./minigame.js?v=stack1"></script>
+  <script src="./world.js?v=stack1"></script>
   <script src="./wind.js"></script>
-  <script src="./dither.js"></script>
+  <script src="./home.js"></script>
+  <script src="./dither.js?v=home1"></script>
+  <script src="./wheel-motion.js"></script>
+  <script src="./wheel-controller.js"></script>
   <script src="./flight.js"></script>
 </body>
 </html>

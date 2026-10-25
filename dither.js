@@ -1,13 +1,14 @@
 'use strict';
-// Reduce the drawing to 13 × 16 cells before dithering; each cell stays 4.5px.
+// Keep the original 13 × 16 drawing and animation inside a padded 16 × 16 canvas.
+// Each output cell is displayed at 4px; the insect is never stretched or resampled anew.
 // Transparent pixels
 // reveal the white paper; every visible pixel uses the reference's pink.
 (() => {
   const sprite = document.getElementById('sprite');
   const output = sprite.getContext('2d');
   const sample = document.createElement('canvas');
-  sample.width = sprite.width;
-  sample.height = sprite.height;
+  sample.width = 13;
+  sample.height = 16;
   const sampler = sample.getContext('2d', { willReadFrequently: true });
   const source = document.createElement('canvas');
   source.width = 64;
@@ -36,7 +37,7 @@
     ctx.restore();
   }
   function draw(time) {
-    const frame = reduced.matches ? 0 : Math.floor(time / 110);
+    const frame = reduced.matches || window.mayflyHome?.waiting ? 0 : Math.floor(time / 110);
     if (frame !== previous) {
       previous = frame;
       ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -64,20 +65,29 @@
       path([[32,49],[32,77]],null,'#333',.7);
       path([[33,49],[36,63],[40,74]],null,'#333',.8);
       ctx.restore();
-      const width = sprite.width, height = sprite.height;
+      // Rasterize exactly as before, including the original Bayer pattern phase.
+      const width = sample.width, height = sample.height;
       sampler.drawImage(source, 0, 0, width, height);
       const pixels = sampler.getImageData(0, 0, width, height);
-      const result = output.createImageData(width, height);
+      const result = output.createImageData(sprite.width, sprite.height);
+      const offsetX = Math.floor((sprite.width - width) / 2);
+      const offsetY = Math.floor((sprite.height - height) / 2);
       for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
-        const i=(y*width+x)*4;
-        const ink=1-pixels.data[i]/255;
+        const sourceIndex=(y*width+x)*4;
+        const destinationIndex=((y+offsetY)*sprite.width+x+offsetX)*4;
+        const ink=1-pixels.data[sourceIndex]/255;
         if(ink>0 && ink>(matrix[(y%4)*4+x%4]+.5)/16) {
-          result.data[i]=255;result.data[i+1]=132;result.data[i+2]=211;result.data[i+3]=255;
+          result.data[destinationIndex]=255;
+          result.data[destinationIndex+1]=132;
+          result.data[destinationIndex+2]=211;
+          result.data[destinationIndex+3]=255;
         }
       }
       output.putImageData(result,0,0);
+      const homeSprite=document.getElementById('home-sprite');
+      if(homeSprite&&frame===0)homeSprite.src=sprite.toDataURL('image/png');
     }
     requestAnimationFrame(draw);
   }
-  requestAnimationFrame(draw);
+  draw(0);
 })();
