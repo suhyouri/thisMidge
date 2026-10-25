@@ -1,0 +1,36 @@
+:root { color-scheme: light; background: #fff; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #fff; }
+#viewport { position: fixed; inset: 0; overflow: hidden; background: #fff; }
+#paper { position: absolute; top: 0; left: 0; width: 8000px; height: 6000px; background: radial-gradient(circle 3000px at center, #000 0% 25%, #555 25% 50%, #aaa 50% 75%, #fff 75% 100%); transform-origin: 0 0; will-change: transform; }
+#mayfly { position: absolute; top: 0; left: 0; width: 58.5px; height: 72px; transform-origin: 50% 50%; will-change: transform; }
+#sprite { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+
+
+#wind-panel { position: fixed; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 2; color: #ff84d3; font: 12px/1.5 system-ui, sans-serif; }
+#wind-connect { display: grid; place-items: center; width: 52px; height: 52px; padding: 6px; border: 1px solid #ff84d370; border-radius: 50%; background: #151515ed; color: inherit; cursor: pointer; box-shadow: 0 2px 12px #0003; transition: background .15s, border-color .15s; }
+#wind-connect svg { display: block; width: 36px; height: 36px; }
+#wind-connect:hover { background: #30212b; border-color: #ff84d3; }
+#wind-connect:disabled { opacity: .5; cursor: wait; }
+#wind-connect:focus-visible { outline: 2px solid #ff84d3; outline-offset: 4px; }
+#wind-status, #wind-credit { position: absolute; left: 50%; width: min(290px, calc(100vw - 32px)); transform: translateX(-50%); padding: 10px 12px; margin: 0; background: #191919f5; color: #eee; visibility: hidden; opacity: 0; transition: opacity .15s; }
+#wind-status { bottom: 94px; border-radius: 8px 8px 0 0; }
+#wind-credit { bottom: 62px; min-height: 32px; border-radius: 0 0 8px 8px; color: #aaa; font-size: 10px; }
+#wind-panel:hover #wind-status, #wind-panel:hover #wind-credit, #wind-panel:focus-within #wind-status, #wind-panel:focus-within #wind-credit { visibility: visible; opacity: 1; }
+#wind-panel a { color: inherit; }
+
+#discoveries { position: absolute; inset: 0; }
+.discovery { position: absolute; width: 72px; height: 72px; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; }
+.discovery canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.discovery.visited { opacity: .4; }
+.discovery:hover, .discovery:focus-visible { opacity: 1; outline: 1px dashed #ff84d3; outline-offset: 5px; }
+#dialogue { position: fixed; z-index: 5; left: 50%; bottom: max(20px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(630px, calc(70vw - 22.4px)); padding: 14px 20px; border: 2px solid #fff; background: #000; color: #fff; box-shadow: 0 0 0 2px #000; outline: none; }
+#dialogue[hidden], #whiteout[hidden] { display: none; }
+#dialogue-line { overflow: hidden; width: 100%; height: 36px; }
+#dialogue-pixels { display: block; image-rendering: pixelated; }
+#dialogue-pixels.scrolling { animation: dialogue-scroll 5s linear both; }
+@keyframes dialogue-scroll { 0%, 15% { transform: translateX(0); } 85%, 100% { transform: translateX(var(--text-travel)); } }
+@media (prefers-reduced-motion: reduce) { #dialogue-pixels.scrolling { animation: none; } }
+.dialogue-open #wind-panel { visibility: hidden; }
+#whiteout { position: fixed; inset: 0; z-index: 10; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: auto; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }

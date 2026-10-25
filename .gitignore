@@ -1,0 +1,11 @@
+.DS_Store
+.AppleDouble
+.env
+.env.*
+!.env.example
+*.log
+node_modules/
+.openai/
+# Local screen recordings
+*.mov
+*.mp4

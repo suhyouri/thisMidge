@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="끝없이 넓은 흰 종이 위, 하루살이의 작은 비행.">
+  <title>하루살이 · 흰 종이</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main id="viewport" aria-label="하루살이를 따라가는 8000 × 6000 픽셀의 흰 종이">
+    <div id="paper">
+      <div id="discoveries" aria-label="종이 위의 이야기"></div>
+      <div id="mayfly" role="img" aria-label="왼쪽 위로 천천히 날아가는, 양쪽 날개를 가진 하루살이">
+        <canvas id="sprite" width="13" height="16" aria-hidden="true"></canvas>
+      </div>
+    </div>
+  </main>
+  <aside id="wind-panel" aria-label="현재 위치의 바람">
+    <button id="wind-connect" type="button" aria-label="현재 위치 바람 연결" title="현재 위치 바람 연결" aria-describedby="wind-status wind-credit">
+      <svg viewBox="0 0 32 32" aria-hidden="true" shape-rendering="crispEdges">
+        <defs>
+          <pattern id="wind-dither" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 0h1v1H0z M2 2h1v1H2z" fill="currentColor" opacity=".4"/></pattern>
+          <clipPath id="wind-circle"><circle cx="16" cy="16" r="15"/></clipPath>
+        </defs>
+        <g clip-path="url(#wind-circle)"><path fill="url(#wind-dither)" d="M0 0h32v32H0z"/></g>
+        <g fill="currentColor">
+          <path d="M5 10h13V8h-3V6h5v2h2v4H5z"/>
+          <path d="M3 15h22v-3h-3v-2h5v2h2v5H3z"/>
+          <path d="M6 20h16v6h-2v2h-5v-2h-2v-3h2v2h4v-3H6z"/>
+          <path d="M3 20h1v2H3z M8 25h2v2H8z M24 23h1v1h-1z"/>
+        </g>
+      </svg>
+    </button>
+    <p id="wind-status" role="status">위치 허용 후 주변 바람을 반영해요</p>
+    <small id="wind-credit">대략적인 위치를 <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>에 보내 바람을 조회합니다.</small>
+  </aside>
+  <section id="dialogue" role="dialog" tabindex="-1" aria-label="발견한 이야기" aria-describedby="dialogue-text" hidden>
+    <p id="dialogue-text" class="sr-only"></p>
+    <div id="dialogue-line"><canvas id="dialogue-pixels" aria-hidden="true"></canvas></div>
+  </section>
+  <canvas id="whiteout" aria-hidden="true" hidden></canvas>
+  <script src="./fonts/unicode-asian.js"></script>
+  <script src="./bitmap-text.js"></script>
+  <script src="./text.js"></script>
+  <script src="./world.js"></script>
+  <script src="./wind.js"></script>
+  <script src="./dither.js"></script>
+  <script src="./flight.js"></script>
+</body>
+</html>
